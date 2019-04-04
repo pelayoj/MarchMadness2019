@@ -1,0 +1,820 @@
+---
+title: "Predictions"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+
+AllGames2019 <- read_csv("~/March Madness/AllGames2019.csv")
+final.df <- read_csv("~/March Madness/Final.csv") %>%
+  mutate(ORtg_diff = ORtg-ORtg_Opp, DRtg_diff = DRtg-DRtg_Opp, rate = (ORtg-DRtg_Opp)-(ORtg_Opp-DRtg), ast_tov_tot = AST_tot/TOV_tot, ast_tov_opp = AST_Opp/TOV_Opp, ast_tov_diff = ast_tov_tot-ast_tov_opp, AST_Diff = AST_tot-AST_Opp, `FG%_Diff`=`FG%_tot`-`FG%_Opp`, STL_diff = STL_tot-STL_Opp, BLK_diff = BLK_tot -BLK_Opp, TOV_diff = TOV_tot-TOV_Opp, Pace_diff= Pace-Pace_Opp, SOS_diff = SOS-SOS_Opp, SRS_diff = SRS-SRS_Opp)
+
+temp <- final.df %>%
+  select(ORtg, ORtg_Opp, DRtg, DRtg_Opp, ORtg_diff, DRtg_diff, rate, Win)
+
+grouped <- AllGames2019 %>%
+  group_by(Team) %>%
+  summarize(Off =mean(Off_Eff), Def =mean(Def_Eff), Opp_Off=mean(Opp_Off_Eff), Opp_Def=mean(Opp_Def_Eff)) %>%
+  mutate(diff=Off-Def)
+
+mod_pred <- glm(`Win` ~ ORtg_diff+DRtg_diff+SOS_diff, data = final.df, family = "binomial")
+summary(mod_pred) #Strength of Schedule is significant!
+
+
+
+```
+
+```{r}
+logit2prob <- function(logit){
+  odds <- exp(logit)
+  prob <- odds / (1 + odds)
+  return(prob)
+}
+```
+
+# Duke vs North Dakota State: Duke
+
+```{r}
+team1 <- read_csv("~/March Madness/team1.csv")
+
+team <- team1 %>%
+  filter(School=="Duke" | School=="North Dakota State")
+head(team)
+
+(intercept <- coef(mod_pred)[1])
+(ORtg_diff <- coef(mod_pred)[2])
+(DRtg_diff <- coef(mod_pred)[3])
+(SOS_diff <- coef(mod_pred)[4])
+
+(logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS))
+
+logit2prob(logits)
+
+
+```
+
+# VCU vs UCF: UCF
+
+```{r}
+team <- team1 %>%
+  filter(School=="VCU" | School=="UCF")
+head(team)
+
+(intercept <- coef(mod_pred)[1])
+(ORtg_diff <- coef(mod_pred)[2])
+(DRtg_diff <- coef(mod_pred)[3])
+(SOS_diff <- coef(mod_pred)[4])
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+
+
+```
+
+# Mississippi State vs Liberty: Mississippi State
+
+```{r}
+team <- team1 %>%
+  filter(School=="Mississippi State" | School=="Liberty")
+head(team)
+
+(intercept <- coef(mod_pred)[1])
+(ORtg_diff <- coef(mod_pred)[2])
+(DRtg_diff <- coef(mod_pred)[3])
+(SOS_diff <- coef(mod_pred)[4])
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Virginia Tech vs Saint Louis: Virginia Tech
+
+```{r}
+team <- team1 %>%
+  filter(School=="Virginia Tech" | School=="Saint Louis")
+head(team)
+
+(intercept <- coef(mod_pred)[1])
+(ORtg_diff <- coef(mod_pred)[2])
+(DRtg_diff <- coef(mod_pred)[3])
+(SOS_diff <- coef(mod_pred)[4])
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+
+```
+
+# Maryland vs Belmont: Maryland
+
+```{r}
+team <- team1 %>%
+  filter(School=="Maryland" | School=="Belmont")
+head(team)
+(intercept <- coef(mod_pred)[1])
+(ORtg_diff <- coef(mod_pred)[2])
+(DRtg_diff <- coef(mod_pred)[3])
+(SOS_diff <- coef(mod_pred)[4])
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+
+```
+
+# LSU vs Yale: LSU
+
+```{r}
+team <- team1 %>%
+  filter(School=="LSU" | School=="Yale")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+
+```
+
+# Louisville vs Minnesota: Louisville
+
+```{r}
+team <- team1 %>%
+  filter(School=="Louisville" | School=="Minnesota")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+
+```
+
+
+# Michigan State vs Bradley: Michigan State
+
+```{r}
+team <- team1 %>%
+  filter(School=="Michigan State" | School=="Bradley")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+
+```
+
+# Gonzaga vs Fairleigh: Gonzaga
+
+```{r}
+team <- team1 %>%
+  filter(School=="Gonzaga" | School=="Fairleigh")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+
+```
+
+# Syracuse vs Baylor: Baylor
+
+```{r}
+team <- team1 %>%
+  filter(School=="Syracuse" | School=="Baylor")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Marquette vs Murray State: Marquette
+
+```{r}
+team <- team1 %>%
+  filter(School=="Marquette" | School=="Murray State")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# FSU vs Vermont: FSU
+
+```{r}
+team <- team1 %>%
+  filter(School=="FSU" | School=="Vermont")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+
+```
+
+# Buffalo vs Arizona State: Arizona State
+
+```{r}
+team <- team1 %>%
+  filter(School=="Buffalo" | School=="Arizona State")
+head(team)
+
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Texas Tech vs Northern Kentucky: Texas Tech
+
+```{r}
+team <- team1 %>%
+  filter(School=="Texas Tech" | School=="Northern Kentucky")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Nevada vs Florida: Florida
+
+```{r}
+team <- team1 %>%
+  filter(School=="Nevada" | School=="Florida")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+
+# Virginia vs Gardner-Webb: Virginia
+
+```{r}
+team <- team1 %>%
+  filter(School=="Virginia" | School=="Gardner-Webb")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Oklahoma vs Ole Miss: Ole Miss
+
+```{r}
+team <- team1 %>%
+  filter(School=="Oklahoma" | School=="Ole Miss")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Oregon vs Wisconsin: Wisconsin
+
+```{r}
+team <- team1 %>%
+  filter(School=="Oregon" | School=="Wisconsin")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Kansas State vs UC-Irvine: Kansas State
+
+```{r}
+team <- team1 %>%
+  filter(School=="Kansas State" | School=="UC-Irvine")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Villanova vs Saint Mary's: Villanova
+
+```{r}
+team <- team1 %>%
+  filter(School=="Villanova" | School=="Saint Mary's")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Purdue vs Old Dominion: Purdue
+
+```{r}
+team <- team1 %>%
+  filter(School=="Purdue" | School=="Old Dominion")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Cincinnati vs Iowa: Iowa
+
+```{r}
+team <- team1 %>%
+  filter(School=="Cincinnati" | School=="Iowa")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Tennessee vs Colgate: Tennessee
+
+```{r}
+team <- team1 %>%
+  filter(School=="Tennessee" | School=="Colgate")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# UNC vs Iona: UNC
+
+```{r}
+team <- team1 %>%
+  filter(School=="UNC" | School=="Iona")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Utah State vs Washington: Washington
+
+```{r}
+team <- team1 %>%
+  filter(School=="Utah State" | School=="Washington")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Auburn vs New Mexico State: Auburn
+
+```{r}
+team <- team1 %>%
+  filter(School=="Auburn" | School=="New Mexico State")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Kansas vs Northeastern: Kansas
+
+```{r}
+team <- team1 %>%
+  filter(School=="Kansas" | School=="Northeastern")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Iowa State vs Ohio State: Iowa State
+
+```{r}
+team <- team1 %>%
+  filter(School=="Iowa State" | School=="Ohio State")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Houston vs Georgia State: Georgia State
+
+```{r}
+team <- team1 %>%
+  filter(School=="Houston" | School=="Georgia State")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Wofford vs Seton Hall: Seton Hall
+
+```{r}
+team <- team1 %>%
+  filter(School=="Wofford" | School=="Seton Hall")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Kentucky vs Abil Christian: Kentucky
+
+```{r}
+team <- team1 %>%
+  filter(School=="Kentucky" | School=="Abilene Christian")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+
+# Round 2
+
+# Duke vs UCF: Kentucky
+
+```{r}
+team <- team1 %>%
+  filter(School=="Duke" | School=="UCF")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Mississippi State vs Virginia Tech: Mississippi State
+
+```{r}
+team <- team1 %>%
+  filter(School=="Mississippi State" | School=="Virginia Tech")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Maryland vs LSU: LSU
+
+```{r}
+team <- team1 %>%
+  filter(School=="Maryland" | School=="LSU")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Louisville vs Michigan State: Michigan State
+
+```{r}
+team <- team1 %>%
+  filter(School=="Michigan State" | School=="Louisville")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Gonzaga vs Baylor: Michigan State
+
+```{r}
+team <- team1 %>%
+  filter(School=="Baylor" | School=="Gonzaga")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Marquette vs Florida State: Florida State
+
+```{r}
+team <- team1 %>%
+  filter(School=="Marquette" | School=="FSU")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Arizona State vs Buffalo: Arizona State
+
+```{r}
+team <- team1 %>%
+  filter(School=="Arizona State" | School=="Texas Tech")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Michigan vs Florida: Florida
+
+```{r}
+team <- team1 %>%
+  filter(School=="Michigan" | School=="Florida")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Virginia vs Ole Miss: Ole Miss
+
+```{r}
+team <- team1 %>%
+  filter(School=="Virginia" | School=="Ole Miss")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Wisconsin vs Kansas State: Wisconsin
+
+```{r}
+team <- team1 %>%
+  filter(School=="Wisconsin" | School=="Kansas State")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Villanova vs Purdue: Purdue
+
+```{r}
+team <- team1 %>%
+  filter(School=="Villanova" | School=="Purdue")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Tennessee vs Iowa: Iowa
+
+```{r}
+team <- team1 %>%
+  filter(School=="Tennessee" | School=="Iowa")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# UNC vs Washington: UNC
+
+```{r}
+team <- team1 %>%
+  filter(School=="UNC" | School=="Washington")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Auburn vs Kansas: Auburn
+
+```{r}
+team <- team1 %>%
+  filter(School=="Auburn" | School=="Kansas")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Iowa State vs Georgia State: Iowa State
+
+```{r}
+team <- team1 %>%
+  filter(School=="Iowa State" | School=="Georgia State")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Kentucky vs Seton Hall: Kentucky
+
+```{r}
+team <- team1 %>%
+  filter(School=="Kentucky" | School=="Seton Hall")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Round 3
+
+# Duke vs Mississippi
+```{r}
+team <- team1 %>%
+  filter(School=="Duke" | School=="Mississippi State")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# LSU vs Michigan State: Michigan State
+```{r}
+team <- team1 %>%
+  filter(School=="LSU" | School=="Michigan State")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Gonzaga vs Florida State: Gonzaga
+```{r}
+team <- team1 %>%
+  filter(School=="Gonzaga" | School=="FSU")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Arizona State vs Florida: Florida
+```{r}
+team <- team1 %>%
+  filter(School=="Arizona State" | School=="Florida")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Ole Miss vs Wisconsin: Ole Miss
+```{r}
+team <- team1 %>%
+  filter(School=="Ole Miss" | School=="Wisconsin")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Purdue vs Iowa: Purdue
+```{r}
+team <- team1 %>%
+  filter(School=="Purdue" | School=="Iowa")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# UNC vs Auburn: UNC
+```{r}
+team <- team1 %>%
+  filter(School=="UNC" | School=="Auburn")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Iowa State vs Kentucky: Iowa State
+```{r}
+team <- team1 %>%
+  filter(School=="Iowa State" | School=="Kentucky")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Mississippi State vs Michigan State: Michigan
+```{r}
+team <- team1 %>%
+  filter(School=="Mississippi State" | School=="Michigan State")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Gonzaga vs Florida: Gonzaga
+```{r}
+team <- team1 %>%
+  filter(School=="Gonzaga" | School=="Florida")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Ole Miss vs Purdue: Purdue
+```{r}
+team <- team1 %>%
+  filter(School=="Ole Miss" | School=="Purdue")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# UNC vs Iowa State: Purdue
+```{r}
+team <- team1 %>%
+  filter(School=="UNC" | School=="Iowa State")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[2,]$ORtg-team[1,]$ORtg)-DRtg_diff*(team[2,]$DRtg-team[1,]$DRtg)+SOS_diff*(team[2,]$SOS-team[1,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Round 4
+
+# Michigan State vs Gonzaga: Michigan State
+```{r}
+team <- team1 %>%
+  filter(School=="Michigan State" | School=="Gonzaga")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# UNC vs Purdue: Purdue
+```{r}
+team <- team1 %>%
+  filter(School=="UNC" | School=="Purdue")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+# Round 5
+
+# Michigan State vs Purdue: Purdue
+```{r}
+team <- team1 %>%
+  filter(School=="Michigan State" | School=="Purdue")
+head(team)
+
+logits <- intercept+ORtg_diff*(team[1,]$ORtg-team[2,]$ORtg)-DRtg_diff*(team[1,]$DRtg-team[2,]$DRtg)+SOS_diff*(team[1,]$SOS-team[2,]$SOS)
+
+(logit2prob(logits))
+```
+
+```{r}
+team1 %>%
+  count(School)
+```
+

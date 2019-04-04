@@ -1,0 +1,180 @@
+---
+title: "March Madness EDA"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+
+final.df <- read_csv("~/March Madness/Final.csv")
+
+library(readr)
+Team_Overall_Data <- read_csv("~/March Madness/Team_Overall_Data.csv")
+
+```
+
+Look at W/L overall
+  - 1586 wins and 667 losses overall
+```{r}
+
+AllGames2019 %>%
+  count(Win)
+
+```
+
+Team and Opponent Points
+  - Not surprising the more points a team scores over the othe team, the more they win
+```{r}
+ggplot(AllGames2019, aes(x=Tm_Points, y=Opp_Points, color=as.factor(Win))) + 
+  geom_point()+
+  geom_smooth(method=lm)
+```
+
+FG, FGA, and FG%
+  -Not surprising the more field goals made, the more a team wins. Everything normally distributed. Probably just use FG% to account of both FG and FGA.
+  -When teams shoot a higher FG% than opponents, they win more
+```{r}
+ggplot(AllGames2019, aes(x=`FG`, color=as.factor(Win))) +
+  geom_histogram(fill="white", alpha=0.5, position="identity")
+
+ggplot(AllGames2019, aes(x=`FGA`, color=as.factor(Win))) +
+  geom_histogram(fill="white", alpha=0.5, position="identity")
+
+ggplot(AllGames2019, aes(x=`FG%`, color=as.factor(Win))) +
+  geom_histogram(fill="white", alpha=0.5, position="identity")
+
+ggplot(AllGames2019, aes(x=as.factor(Win), y=`FG%_Diff`)) +
+  geom_boxplot()
+
+```
+
+3P
+  -Teams with higher 3 Point percentage tend to win more
+  -The difference is not as prominent as FG%, 
+```{r}
+ggplot(AllGames2019, aes(x=`3P`, color=as.factor(Win))) +
+  geom_histogram(fill="white", alpha=0.5, position="identity")
+
+ggplot(AllGames2019, aes(x=`3PA`, color=as.factor(Win))) +
+  geom_histogram(fill="white", alpha=0.5, position="identity")
+
+ggplot(AllGames2019, aes(x=`3P%`, color=as.factor(Win))) +
+  geom_histogram(fill="white", alpha=0.5, position="identity")
+
+ggplot(AllGames2019, aes(x=as.factor(Win), y=`3P%_Diff`)) +
+  geom_boxplot()
+
+```
+
+FT
+  -It seems like shooting a better FT% than your opponent does not gurantee winning
+```{r}
+ggplot(AllGames2019, aes(x=`FT`, color=as.factor(Win))) +
+  geom_histogram(fill="white", alpha=0.5, position="identity")
+
+ggplot(AllGames2019, aes(x=`FTA`, color=as.factor(Win))) +
+  geom_histogram(fill="white", alpha=0.5, position="identity")
+
+ggplot(AllGames2019, aes(x=`FT%`, color=as.factor(Win))) +
+  geom_histogram(fill="white", alpha=0.5, position="identity")
+
+ggplot(AllGames2019, aes(x=as.factor(Win), y=`FT%_Diff`)) +
+  geom_boxplot()
+
+```
+
+PF/BLK/STL
+  -Steals and PF don't seem to matter so much. Blocks and Opponents Blocks seem to have an influence; difference in blocks do as well
+```{r}
+ggplot(AllGames2019, aes(x=as.factor(Win), y=`PF`)) +
+  geom_boxplot()
+
+ggplot(AllGames2019, aes(x=as.factor(Win), y=`BLK`)) +
+  geom_boxplot()
+
+ggplot(AllGames2019, aes(x=as.factor(Win), y=`STL`)) +
+  geom_boxplot()
+
+ggplot(AllGames2019, aes(x=as.factor(Win), y=`Opp_PF`)) +
+  geom_boxplot()
+
+ggplot(AllGames2019, aes(x=as.factor(Win), y=`Opp_BLK`)) +
+  geom_boxplot()
+
+ggplot(AllGames2019, aes(x=as.factor(Win), y=`Opp_STL`)) +
+  geom_boxplot()
+
+ggplot(AllGames2019, aes(x=as.factor(Win), y=`BLK_Diff`)) +
+  geom_boxplot()
+
+```
+
+AST-TOV
+  -Teams that win have more assist less turnovers (but turnovers may not be a large factor)
+  -AST to TOV doesn't matter so much, but the difference seems to affect wins
+```{r}
+ggplot(AllGames2019, aes(x=as.factor(Win), y=AST)) +
+  geom_boxplot()
+
+ggplot(AllGames2019, aes(x=as.factor(Win), y=TOV)) +
+  geom_boxplot()
+
+ggplot(AllGames2019, aes(x=AST, y=TOV, color=as.factor(Win))) + 
+  geom_point()+
+  geom_smooth(method=lm)
+
+
+ggplot(AllGames2019, aes(x=`AST_Diff`, y=TOV_Diff, color=as.factor(Win))) + 
+  geom_point()+
+  geom_smooth(method=lm)
+```
+
+
+https://www.sportsrec.com/calculate-teams-offensive-defensive-efficiencies-7775395.html
+
+Offensive Efficiency
+Calculate the number of total number of possessions for your team using the formula: field goals attempted - offensive rebounds + turnovers + (0.4 x free throws attempted) = total number of possessions for the season. This works because a possession can end only in one of three ways: an attempted field goal, a turnover or a free throw, with an offensive rebound negating additional field goal attempts.
+
+Divide the team's total points scored for the season by the possessions you calculated in Step 1. For example, 938 total points scored divided by 998 total possessions gives your team 0.94 points scored per possession. Numbers above 1.0 are generally considered good.
+
+Convert the offensive PPP number to an efficiency rating by simply multipling by 100. So 0.94 points scored per possession becomes an offensive efficiency rating of 94.
+
+Defensive Efficiency
+Use the formula field goals attempted - offensive rebounds + turnovers + (0.4 x free throws attempted) = total number of possessions for the season to calculate total team possessions.
+
+Divide the total number of points allowed by your team by the possession total you calculated in Step 1. For example, 1009 total points allowed divided by 998 total possessions gives your team 1.01 points allowed per possession. The opposite is true for defensive PPP: Above 1.0 is bad; below 1.0 is considered good.
+
+Convert defensive points per possession to a defensive efficiency rating by multiplying by 100. So 1.01 points allowed per possession becomes a defensive efficiency rating of 101.
+
+Both account for wins
+```{r}
+ggplot(AllGames2019, aes(x=`Off_Eff`, color=as.factor(Win))) +
+  geom_histogram(alpha=0.5, position="identity")
+
+ggplot(AllGames2019, aes(x=`Def_Eff`, color=as.factor(Win))) +
+  geom_histogram(alpha=0.5, position="identity")
+
+ggplot(AllGames2019, aes(x=Off_Eff, y=Def_Eff, color=as.factor(Win))) + 
+  geom_point()+
+  geom_smooth(method=lm)
+
+ggplot(AllGames2019, aes(x=`Opp_Off_Eff`, color=as.factor(Win))) +
+  geom_histogram(alpha=0.5, position="identity")
+
+ggplot(AllGames2019, aes(x=`Opp_Def_Eff`, color=as.factor(Win))) +
+  geom_histogram(alpha=0.5, position="identity")
+
+ggplot(AllGames2019, aes(x=Opp_Off_Eff, y=Opp_Def_Eff, color=as.factor(Win))) + 
+  geom_point()+
+  geom_smooth(method=lm)
+```
+
+Rebounding Difference
+  -Teams who get outrebounded seem to win more
+```{r}
+ggplot(AllGames2019, aes(x=as.factor(Win), y=TRB_Diff)) +
+  geom_boxplot()
+```
+

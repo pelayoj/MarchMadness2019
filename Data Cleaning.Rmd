@@ -1,0 +1,70 @@
+---
+title: "Untitled"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(readr)
+library(dplyr)
+Team_Overall_Data <- read_csv("~/March Madness/Team_Overall_Data.csv") %>% 
+  mutate(School=as.character(School)) %>% 
+  mutate(id=row_number())
+
+
+ncaa<-with(Team_Overall_Data,grep("NCAA",School))
+
+Team_Overall_Data<-Team_Overall_Data %>% 
+  mutate(School=ifelse(id %in% ncaa,
+                        substr(School,1,nchar(School)-5),
+                        School),
+         DRtg= 100*(`Opp.`/(FGA-ORB+TOV+(.4*FTA))))
+#head(Team_Overall_Data$School)
+
+
+AllGames2019 <- read_csv("~/March Madness/AllGames2019.csv")
+
+
+
+
+```
+
+
+
+```{r}
+temp1 <- AllGames2019 %>%
+  dplyr::select(Team, Opp)
+s1 <- with(temp1, unique(Team))
+
+temp2<- Team_Overall_Data %>%
+  dplyr::select(School, ORtg)
+s2 <- with(temp2, unique(School))
+##common names
+intersect(s1, s2)
+diffs<-setdiff(s1,s2)
+diffs
+combo.df <- temp1 %>%
+  inner_join(temp2, by = c("Team"="School")) %>%
+  inner_join(temp2, by =c("Opp"="School"))
+
+
+Team_Overall_Data1 <- Team_Overall_Data %>%
+  select(-Rk, -W, -L, -W_1,-L_1,-W_2,-L_2, -W_3, -L_3, -Tm., -Opp., -MP, -FG, -FGA, -`3P`,-`3PA`, -FT, -FTA, -FTr, -`3PAr`, -`TS%`, -`TRB%`, -`AST%`, -`STL%`, -`BLK%`, -`eFG%` ,-`TOV%`, -`ORB%`, -id )
+
+
+
+```
+
+```{r}
+final.df <- AllGames2019 %>%
+  inner_join(Team_Overall_Data1, by = c("Team"="School"), suffix=c("", "_tot")) %>%
+  inner_join(Team_Overall_Data1, by =c("Opp"="School"), suffix= c("", "_Opp"))
+```
+
+```{r}
+write.csv(Team_Overall_Data1, "~/March Madness/team1.csv")
+
+write.csv(final.df, "~/March Madness/Final.csv")
+
+```

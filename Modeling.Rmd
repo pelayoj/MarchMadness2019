@@ -1,0 +1,266 @@
+---
+title: "Modeling"
+output: html_document
+---
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+
+AllGames2019 <- read_csv("~/March Madness/AllGames2019.csv")
+final.df <- read_csv("~/March Madness/Final.csv") %>%
+  mutate(ORtg_diff = ORtg-ORtg_Opp, DRtg_diff = DRtg-DRtg_Opp, rate = (ORtg-DRtg_Opp)-(ORtg_Opp-DRtg), ast_tov_tot = AST_tot/TOV_tot, ast_tov_opp = AST_Opp/TOV_Opp, ast_tov_diff = ast_tov_tot-ast_tov_opp, AST_Diff = AST_tot-AST_Opp, `FG%_Diff`=`FG%_tot`-`FG%_Opp`, STL_diff = STL_tot-STL_Opp, BLK_diff = BLK_tot -BLK_Opp, TOV_diff = TOV_tot-TOV_Opp, Pace_diff= Pace-Pace_Opp, SOS_diff = SOS-SOS_Opp, SRS_diff = SRS-SRS_Opp)
+
+temp <- final.df %>%
+  select(ORtg, ORtg_Opp, DRtg, DRtg_Opp, ORtg_diff, DRtg_diff, rate, Win)
+
+grouped <- AllGames2019 %>%
+  group_by(Team) %>%
+  summarize(Off =mean(Off_Eff), Def =mean(Def_Eff), Opp_Off=mean(Opp_Off_Eff), Opp_Def=mean(Opp_Def_Eff)) %>%
+  mutate(diff=Off-Def)
+
+```
+
+Look at variables:
+
+ORtg, ORtg_Opp, AST%, AST%_Opp, Pace, TOV_tot, 
+
+Opponent offense - defensive
+Your offense - opponent defensive
+
+(TO-OD)/(TD-OO)
+
+
+```{r}
+mod1 <- glm(`Win` ~ rate, data = final.df, family = "binomial")
+summary(mod1) #rate not significant
+
+mod2 <- glm(`Win` ~ ORtg_diff+DRtg_diff, data = final.df, family = "binomial")
+summary(mod2)
+
+mod3 <- glm(`Win` ~ ORtg_diff+DRtg_diff+ast_tov_tot+ast_tov_opp, data = final.df, family = "binomial")
+summary(mod3) #Ast/tov not significant
+
+mod4 <- glm(`Win` ~ ORtg_diff+DRtg_diff+AST_Diff, data = final.df, family = "binomial")
+summary(mod4) #AST not significant
+
+mod5 <- glm(`Win` ~ ORtg_diff+DRtg_diff+`FG%_Diff`, data = final.df, family = "binomial")
+summary(mod5) #FG%_difference is significant
+
+
+mod6 <- glm(`Win` ~ ORtg_diff+DRtg_diff+`FG%_Diff`+STL_diff, data = final.df, family = "binomial")
+summary(mod6) #Steals not significant
+
+mod7 <- glm(`Win` ~ ORtg_diff+DRtg_diff+`FG%_Diff`+BLK_diff, data = final.df, family = "binomial")
+summary(mod7) #Blocks are significant
+
+mod8 <- glm(`Win` ~ ORtg_diff+DRtg_diff+`FG%_Diff`+BLK_diff+`FT%_tot`, data = final.df, family = "binomial")
+summary(mod8) #FT not significant
+
+mod9 <- glm(`Win` ~ ORtg_diff+DRtg_diff+`FG%_Diff`+BLK_diff+`3P%_tot`, data = final.df, family = "binomial")
+summary(mod9) #3P not significant
+
+mod10 <- glm(`Win` ~ ORtg_diff+DRtg_diff+`FG%_Diff`+BLK_diff+`TOV_diff`, data = final.df, family = "binomial")
+summary(mod10) #TOV_diff not significant
+
+mod11 <- glm(`Win` ~ ORtg_diff+DRtg_diff+`FG%_Diff`+BLK_diff+Pace_diff, data = final.df, family = "binomial")
+summary(mod11) #Pace is not significant
+
+mod12 <- glm(`Win` ~ ORtg_diff+DRtg_diff+`FG%_Diff`+BLK_diff+SOS, data = final.df, family = "binomial")
+summary(mod12) #Strength of Schedule is significant!
+
+mod13 <- glm(`Win` ~ ORtg_diff+DRtg_diff+`FG%_Diff`+BLK_diff+SOS+SRS, data = final.df, family = "binomial")
+summary(mod13) #Strength of Schedule is significant!
+
+###
+# Remmove FG%_Diff because of collinearity
+###
+mod14 <- glm(`Win` ~ ORtg_diff+DRtg_diff+BLK_diff+SOS, data = final.df, family = "binomial")
+summary(mod14) #Strength of Schedule is significant!
+
+mod15 <- glm(`Win` ~ ORtg_diff+DRtg_diff+BLK_diff+SRS, data = final.df, family = "binomial")
+summary(mod15) #SRS is significant!
+
+vif(mod15)
+
+mod16 <- glm(`Win` ~ ORtg_diff+DRtg_diff+BLK_diff+SRS+SOS, data = final.df, family = "binomial")
+summary(mod16) #SRS is significant!
+vif(mod16) #Collinearity between SRS and SOS
+
+mod17 <- glm(`Win` ~ ORtg_diff+DRtg_diff+SOS+SOS_Opp, data = final.df, family = "binomial")
+summary(mod17) #SRS is significant!
+vif(mod17) #Collinearity between SOS and SOS_Opp
+
+mod18 <- glm(`Win` ~ ORtg_diff+DRtg_diff+SOS_diff, data = final.df, family = "binomial")
+summary(mod18) #SRS is significant!
+vif(mod18) #Collinearity between SOS and SOS_Opp
+```
+
+
+Model 18 seems to be the best.
+
+Exponentiated Coefficients and Confidence Interval 
+```{r}
+exp(cbind(OR = coef(mod18), confint(mod18)))
+```
+
+Prediction
+```{r}
+probs <- predict(mod18,data=final.df,type="response")
+head(probs)
+log.odds<- predict(mod18,data=final.df)
+probs0<- exp(log.odds)/(1+exp(log.odds))
+head(cbind(probs,probs0))
+final.df <- mutate(final.df,prob.log = probs)
+
+
+```
+
+Training vs Testing with 4 predictors
+```{r}
+(n<-nrow(final.df))
+
+errs <- numeric(20)
+tval <- numeric(20)
+
+calcErr <- function(thresh.default) {
+ test.df<-test.df %>% 
+  mutate(games.pred= ifelse(prob.log< thresh.default,0,1))
+  with(test.df,mean(Win!=games.pred))
+}
+
+for(i in 1:20){
+  train<-sample(1:n,n/2,rep=F)
+  train.df<-final.df[train,]
+  test.df<-final.df[-train,]
+  mod.log <- glm(`Win` ~ ORtg_diff+DRtg_diff+BLK_diff+SOS_diff, data = train.df, family = "binomial")
+  summary(mod.log)
+  probs <- predict(mod.log,newdata=test.df,type="response")
+  test.df <- mutate(test.df,prob.log = probs)
+  threshVals<-.5
+  err.preds<-map_dbl(threshVals,calcErr)
+  min(err.preds)
+  id.min<-which.min(err.preds)
+  threshVals[id.min]
+
+  errs[i]=  min(err.preds)
+  tval[i]=threshVals[id.min]
+}
+
+cbind(errs, tval)
+mean(errs)
+mean(tval)
+```
+
+Training vs Testing with 3 predictors
+```{r}
+(n<-nrow(final.df))
+
+errs <- numeric(20)
+tval <- numeric(20)
+
+calcErr <- function(thresh.default) {
+ test.df<-test.df %>% 
+  mutate(games.pred= ifelse(prob.log< thresh.default,0,1))
+  with(test.df,mean(Win!=games.pred))
+}
+
+for(i in 1:20){
+  train<-sample(1:n,n/2,rep=F)
+  train.df<-final.df[train,]
+  test.df<-final.df[-train,]
+    mod.log <- glm(`Win` ~ ORtg_diff+DRtg_diff+SOS_diff, data = train.df, family = "binomial")
+  summary(mod.log)
+  probs <- predict(mod.log,newdata=test.df,type="response")
+  test.df <- mutate(test.df,prob.log = probs)
+  threshVals<-.5
+  err.preds<-map_dbl(threshVals,calcErr)
+  min(err.preds)
+  id.min<-which.min(err.preds)
+  threshVals[id.min]
+
+  errs[i]=  min(err.preds)
+  tval[i]=threshVals[id.min]
+}
+
+cbind(errs, tval)
+mean(errs)
+mean(tval)
+```
+
+3 Predictors is better than 4
+
+Training vs Testing with 2 predictors
+```{r}
+(n<-nrow(final.df))
+
+errs <- numeric(20)
+tval <- numeric(20)
+
+calcErr <- function(thresh.default) {
+ test.df<-test.df %>% 
+  mutate(games.pred= ifelse(prob.log< thresh.default,0,1))
+  with(test.df,mean(Win!=games.pred))
+}
+
+for(i in 1:20){
+  train<-sample(1:n,n/2,rep=F)
+  train.df<-final.df[train,]
+  test.df<-final.df[-train,]
+  mod.log <- glm(`Win` ~ ORtg_diff+DRtg_diff, data = train.df, family = "binomial")
+  probs <- predict(mod.log,newdata=test.df,type="response")
+  test.df <- mutate(test.df,prob.log = probs)
+  threshVals<-.5
+  err.preds<-map_dbl(threshVals,calcErr)
+  min(err.preds)
+  id.min<-which.min(err.preds)
+  threshVals[id.min]
+
+  errs[i]=  min(err.preds)
+  tval[i]=threshVals[id.min]
+}
+
+cbind(errs, tval)
+mean(errs)
+mean(tval)
+```
+
+Using 3 predictors is the best
+```{r}
+library(car)
+mod.log3_preds <- glm(`Win` ~ ORtg_diff+DRtg_diff+SOS_diff, data = final.df, family = "binomial")
+
+vif(mod.log3_preds)
+```
+
+
+
+```{r}
+calcErr <- function(thresh.default) {
+ final.df<-final.df %>% 
+  mutate(games.pred= ifelse(prob.log< thresh.default,0,1))
+  with(final.df,mean(Win!=games.pred))
+}
+  
+thresh.pred <-.5
+
+final.df<-final.df %>% 
+  mutate(pred.log= ifelse(prob.log < thresh.pred ,0,1))
+
+final.df %>%
+  count(pred.log)
+
+with(final.df,table(Win, pred.log))
+
+(err.log <- with(final.df, mean(Win != pred.log)))
+
+final.df %>%
+    group_by(Team)%>%
+    summarize(err=mean(!Win == pred.log),
+              err.null=mean(`W/L`=="W"),
+              err.ratio=err/err.null)
+
+
+```
+
+

@@ -1,0 +1,124 @@
+---
+title: "Merging Data"
+output: html_document
+---
+
+Merge All Games of All Teams
+```{r}
+library(readr)
+Abilene_Christian <- read_csv("~/March Madness/March Madness Data/Abilene Christian.csv")
+AZSU <- read_csv("~/March Madness/March Madness Data/Arizona State.csv")
+Auburn <- read_csv("~/March Madness/March Madness Data/Auburn.csv")
+Baylor <- read_csv("~/March Madness/March Madness Data/Baylor.csv")
+Belmont <- read_csv("~/March Madness/March Madness Data/Belmont.csv")
+Bradley <- read_csv("~/March Madness/March Madness Data/Bradley.csv")
+Buffalo <- read_csv("~/March Madness/March Madness Data/Buffalo.csv")
+Cincinnati <- read_csv("~/March Madness/March Madness Data/Cincinnati.csv")
+Colgate <- read_csv("~/March Madness/March Madness Data/Colgate.csv")
+Duke <- read_csv("~/March Madness/March Madness Data/Duke.csv")
+Fairleigh <- read_csv("~/March Madness/March Madness Data/Fairleigh.csv")
+Florida <- read_csv("~/March Madness/March Madness Data/Florida.csv")
+FloridaState <- read_csv("~/March Madness/March Madness Data/FloridaState.csv")
+Gardner_Webb <- read_csv("~/March Madness/March Madness Data/Gardner-Webb.csv")
+Georgia_State <- read_csv("~/March Madness/March Madness Data/Georgia State.csv")
+Gonzaga <- read_csv("~/March Madness/March Madness Data/Gonzaga.csv")
+Houston <- read_csv("~/March Madness/March Madness Data/Houston.csv")
+Iona <- read_csv("~/March Madness/March Madness Data/Iona.csv")
+Iowa_State <- read_csv("~/March Madness/March Madness Data/Iowa State.csv")
+Iowa <- read_csv("~/March Madness/March Madness Data/Iowa.csv")
+Kansas <- read_csv("~/March Madness/March Madness Data/Kansas.csv")
+Kansas_State <- read_csv("~/March Madness/March Madness Data/KansasState.csv")
+Kentucky <- read_csv("~/March Madness/March Madness Data/Kentucky.csv")
+Liberty <- read_csv("~/March Madness/March Madness Data/Liberty.csv")
+Louisville <- read_csv("~/March Madness/March Madness Data/Louisville.csv")
+LSU <- read_csv("~/March Madness/March Madness Data/LSU.csv")
+Marquette <- read_csv("~/March Madness/March Madness Data/Marquette.csv")
+Maryland <- read_csv("~/March Madness/March Madness Data/Maryland.csv")
+Michigan <- read_csv("~/March Madness/March Madness Data/Michigan.csv")
+MichiganState <- read_csv("~/March Madness/March Madness Data/MichiganState.csv")
+Minnesota <- read_csv("~/March Madness/March Madness Data/Minnesota.csv")
+Mississippi_State <- read_csv("~/March Madness/March Madness Data/Mississippi State.csv")
+Montana <- read_csv("~/March Madness/March Madness Data/Montana.csv")
+Murray_State <- read_csv("~/March Madness/March Madness Data/Murray State.csv")
+NCC <- read_csv("~/March Madness/March Madness Data/NCC.csv")
+Nevada <- read_csv("~/March Madness/March Madness Data/Nevada.csv")
+New_Mexico_State <- read_csv("~/March Madness/March Madness Data/New Mexico State.csv")
+North_Dakota_State <- read_csv("~/March Madness/March Madness Data/North Dakota State.csv")
+Northeastern <- read_csv("~/March Madness/March Madness Data/Northeastern.csv")
+Northern_Kentucky <- read_csv("~/March Madness/March Madness Data/Northern Kentucky.csv")
+Ohio_State <- read_csv("~/March Madness/March Madness Data/Ohio State.csv")
+Oklahoma <- read_csv("~/March Madness/March Madness Data/Oklahoma.csv")
+Old_Dominion <- read_csv("~/March Madness/March Madness Data/Old Dominion.csv")
+Ole_Miss <- read_csv("~/March Madness/March Madness Data/Ole Miss.csv")
+Oregon <- read_csv("~/March Madness/March Madness Data/Oregon.csv")
+Prairie_View <- read_csv("~/March Madness/March Madness Data/Prairie View.csv")
+Purdue <- read_csv("~/March Madness/March Madness Data/Purdue.csv")
+Saint_Louis <- read_csv("~/March Madness/March Madness Data/Saint Louis.csv")
+Saint_Marys <- read_csv("~/March Madness/March Madness Data/Saint Mary's.csv")
+Seton_Hall <- read_csv("~/March Madness/March Madness Data/Seton Hall.csv")
+St_Johns <- read_csv("~/March Madness/March Madness Data/St Johns.csv")
+Syracuse <- read_csv("~/March Madness/March Madness Data/Syracuse.csv")
+Temple <- read_csv("~/March Madness/March Madness Data/Temple.csv")
+Tennessee <- read_csv("~/March Madness/March Madness Data/Tennessee.csv")
+TexasTech <- read_csv("~/March Madness/March Madness Data/TexasTech.csv")
+UC_Irvine <- read_csv("~/March Madness/March Madness Data/UC-Irvine.csv")
+UCF <- read_csv("~/March Madness/March Madness Data/UCF.csv")
+UNC <- read_csv("~/March Madness/March Madness Data/UNC.csv")
+Utah_State <- read_csv("~/March Madness/March Madness Data/Utah State.csv")
+VCU <- read_csv("~/March Madness/March Madness Data/VCU.csv")
+Vermont <- read_csv("~/March Madness/March Madness Data/Vermont.csv")
+Villanova <- read_csv("~/March Madness/March Madness Data/Villanova.csv")
+Virginia_Tech <- read_csv("~/March Madness/March Madness Data/Virginia Tech.csv")
+Virginia <- read_csv("~/March Madness/March Madness Data/Virginia.csv")
+Washington <- read_csv("~/March Madness/March Madness Data/Washington.csv")
+Wisconsin <- read_csv("~/March Madness/March Madness Data/Wisconsin.csv")
+Wofford <- read_csv("~/March Madness/March Madness Data/Wofford.csv")
+Yale <- read_csv("~/March Madness/March Madness Data/Yale.csv")
+
+
+data.df<- rbind(Abilene_Christian, AZSU, Auburn, Baylor, Belmont, Bradley, Buffalo, Cincinnati, Colgate, Duke, Fairleigh, Florida, FloridaState, Gardner_Webb, Georgia_State, Gonzaga, Houston, Iona, Iowa_State,Iowa, Kansas, Kansas_State, Kentucky, Liberty, Louisville,LSU, Marquette, Maryland, Michigan, MichiganState, Minnesota, Mississippi_State, Montana, Murray_State, NCC, Nevada, New_Mexico_State, North_Dakota_State, Northeastern, Northern_Kentucky, Ohio_State, Oklahoma, Old_Dominion, Ole_Miss, Oregon,Prairie_View, Purdue, Saint_Louis, Saint_Marys, Seton_Hall, St_Johns, Syracuse, Temple, Tennessee, TexasTech, UC_Irvine, UCF, UNC, Utah_State, VCU, Vermont, Villanova, Virginia_Tech, Virginia, Washington, Wisconsin, Wofford, Yale)
+
+```
+
+Check if there are 68 Teams
+```{r}
+library(dplyr)
+
+data.df %>%
+  count(Team)
+
+```
+
+Rename Columns
+
+```{r}
+names(data.df)[25:40]<-c("Opp_FG", "Opp_FGA", "Opp_FG%", "Opp_3P", "Opp_3PA", "Opp_3P%", "Opp_FT", "Opp_FTA", "Opp_FT%", "Opp_ORB", "Opp_TRB", "Opp_AST", "Opp_STL", "Opp_BLK", "Opp_TOV", "Opp_PF")
+names(data.df)[4] <-"Opp"
+names(data.df)[6:7] <- c("Tm_Points", "Opp_Points")
+```
+
+Create New Variables
+```{r}
+AllGames2019 <-data.df
+AllGames2019 <- AllGames2019 %>%
+  mutate(Win = ifelse(`W/L`=="W" | `W/L`=="W (1 OT)" | `W/L`== "W (2 OT)", 1, 0))
+AllGames2019 <- AllGames2019 %>%
+  mutate(`FG%_Diff` = `FG%`-`Opp_FG%`)
+AllGames2019 <- AllGames2019 %>%
+  mutate(`3P%_Diff` = `3P%`-`Opp_3P%`)
+AllGames2019 <- AllGames2019 %>%
+  mutate(`FT%_Diff` = `FT%`-`Opp_FT%`)
+AllGames2019 <- AllGames2019 %>%
+  mutate(`BLK_Diff` = `BLK`-`Opp_BLK`)
+AllGames2019 <- AllGames2019 %>%
+  mutate(`AST_Diff` = `AST`-`Opp_AST`, `TOV_Diff`= `TOV`- `Opp_TOV`)
+AllGames2019 <- AllGames2019 %>%
+  mutate(`AST/TOV` = `AST`/TOV, Off_Eff = (Tm_Points)/(FGA+TOV+(.4*FTA)-ORB), Def_Eff= (Opp_Points)/(FGA+TOV+(.4*FTA)-ORB), Opp_Off_Eff = (Opp_Points)/(Opp_FGA-Opp_ORB+Opp_TOV+(.4*Opp_FTA)),Opp_Def_Eff = (Tm_Points)/(Opp_FGA-Opp_ORB+Opp_TOV+(.4*Opp_FTA)))
+AllGames2019 <- AllGames2019 %>%
+  mutate(TRB_Diff = TRB-Opp_TRB)
+
+```
+
+```{r}
+write.csv(AllGames2019, "~/March Madness/AllGames2019.csv")
+```
